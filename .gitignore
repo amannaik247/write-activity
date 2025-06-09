@@ -13,3 +13,5 @@ py-compile
 *~
 locale
 dist
+venv
+rough_plan.md

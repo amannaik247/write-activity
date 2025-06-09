@@ -88,6 +88,9 @@ class AbiWordActivity(activity.Activity):
         self.abiword_canvas = DocumentView()
         self._new_instance = True
         toolbar_box = ToolbarBox()
+        
+        # used to debounce grammar checking while typing
+        self._grammar_timeout_id = None
 
         self.activity_button = ActivityToolbarButton(self)
         toolbar_box.toolbar.insert(self.activity_button, -1)
@@ -206,6 +209,8 @@ class AbiWordActivity(activity.Activity):
             logger.debug("We are creating an activity")
 
         self.abiword_canvas.zoom_width()
+        # real-time grammar: schedule a check 1.2 s after last keystroke
+        self.abiword_canvas.connect('key-release-event', self.__key_release_cb)
         self.abiword_canvas.show()
         self.connect_after('map-event', self.__map_activity_event_cb)
 
@@ -480,3 +485,21 @@ class AbiWordActivity(activity.Activity):
         finally:
             chooser.destroy()
             del chooser
+            
+    # --------------------------------------------------------------------
+    #  Real-time grammar helpers
+    # --------------------------------------------------------------------
+    def __key_release_cb(self, widget, event):
+        """Debounce grammar checking – restart the timer on every key."""
+        if self._grammar_timeout_id:
+            GLib.source_remove(self._grammar_timeout_id)
+
+        # Run grammar check 1.2 s after the last key-up event
+        self._grammar_timeout_id = GLib.timeout_add(
+            1200, self.__idle_grammar_check)
+
+    def __idle_grammar_check(self):
+        """Called by GLib once the user has paused typing."""
+        self._grammar_timeout_id = None
+        self.abiword_canvas.check_grammar()          # <- triggers plugin
+        return False

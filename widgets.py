@@ -273,3 +273,27 @@ class DocumentView(Abi.Widget):
         version = Abi._version
         logging.debug('Abiword version %s', version)
         return version
+
+    def check_grammar(self):
+        """Run the AbiGrammar plugin on the current document."""
+        try:
+            doc = self.get_document()
+            if doc:
+                # This is the canonical command name installed by the plugin
+                doc.command("grammarcheck", 0, 0)
+        except Exception as e:
+            logging.error('Grammar check failed: %s', e)
+
+    def queue_grammar_check(self, delay_ms=1200):
+        """Debounce grammar checking – call after the user finishes typing."""
+        if hasattr(self, '_grammar_timeout_id') and self._grammar_timeout_id:
+            GLib.source_remove(self._grammar_timeout_id)
+
+        self._grammar_timeout_id = GLib.timeout_add(
+            delay_ms, self._run_debounced_grammar)
+
+    def _run_debounced_grammar(self):
+        self._grammar_timeout_id = None
+        self.check_grammar()
+        return False
+    
