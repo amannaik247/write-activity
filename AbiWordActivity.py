@@ -500,6 +500,9 @@ class AbiWordActivity(activity.Activity):
 
     def __idle_grammar_check(self):
         """Called by GLib once the user has paused typing."""
+        print("Running grammar check…")
         self._grammar_timeout_id = None
-        self.abiword_canvas.check_grammar()          # <- triggers plugin
+        self.abiword_canvas.check_grammar() # <- triggers plugin
+        # add this to re-render annotations
+        self.abiword_canvas.queue_draw()
         return False
