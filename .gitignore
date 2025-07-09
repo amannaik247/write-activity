@@ -14,3 +14,7 @@ py-compile
 locale
 dist
 venv
+.env
+groq_api_groqSDK.py
+llm_terminal_test.py
+.gitignore
