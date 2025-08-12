@@ -33,6 +33,14 @@
     padding: 12px 24px;
     font-size: 1.1em;
 }
+
+.advice-popover {
+    background-color: #f0f8ff;
+    border: 1px solid #add8e6;
+    border-radius: 8px;
+    padding: 10px;
+    color: #333333; /* Dark gray for better visibility */
+}
 .framework-key {
     font-weight: 600;
     color: #37474f;

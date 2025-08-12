@@ -28,7 +28,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('TelepathyGLib', '0.12')
 
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 from gi.repository import TelepathyGLib
 
 from sugar3.activity import activity
@@ -151,7 +151,7 @@ class AbiWordActivity(activity.Activity):
         advice_toolbar = ToolbarButton()
         advice_toolbar.props.icon_name = 'document-print'
         advice_toolbar.props.label = _('Print Content')
-        advice_toolbar.connect('clicked', lambda w: self.get_canvas_content_for_advice())
+        advice_toolbar.connect('clicked', self._on_advice_button_clicked)
         toolbar_box.toolbar.insert(advice_toolbar, -1)
 
         separator = Gtk.SeparatorToolItem()
@@ -201,6 +201,15 @@ class AbiWordActivity(activity.Activity):
 
         toolbar_box.show_all()
         self.set_toolbar_box(toolbar_box)
+
+        # Load CSS for popover styling
+        css_provider = Gtk.CssProvider()
+        css_file = os.path.join(os.path.dirname(__file__), 'chat.css')
+        with open(css_file, 'rb') as f:
+            css_provider.load_from_data(f.read())
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
 
         # add a overlay to be able to show a icon while joining a shared doc
         overlay = Gtk.Overlay()
@@ -465,10 +474,33 @@ class AbiWordActivity(activity.Activity):
             document_content = self.abiword_canvas.get_content('text/plain', None)[0]
             advice_prompt = self.load_story_prompt()
             advice = get_llm_response([{"role": "user", "content": document_content}], advice_prompt)
-            print("Mary Tales suggests:\n", advice)
+            return advice
 
         except Exception as e:
             logger.error("Error getting canvas content: %s", e)
+
+    def _on_advice_button_clicked(self, widget):
+        advice = self.get_canvas_content_for_advice()
+        if advice:
+            popover = Gtk.Popover.new(widget)
+            content_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
+            content_box.set_border_width(10)
+
+            header_label = Gtk.Label(label="<b>MARY TALES ADVICE:</b>")
+            header_label.set_use_markup(True)
+            header_label.set_xalign(0)
+            content_box.pack_start(header_label, False, False, 0)
+
+            advice_label = Gtk.Label(label=advice)
+            advice_label.set_line_wrap(True)
+            advice_label.set_max_width_chars(50)
+            advice_label.set_xalign(0)
+            content_box.pack_start(advice_label, False, False, 0)
+
+            popover.add(content_box)
+            popover.get_style_context().add_class("advice-popover")
+            popover.show_all()
+            popover.popup()
 
     def read_file(self, file_path):
         logging.debug('AbiWordActivity.read_file: %s, mimetype: %s',
