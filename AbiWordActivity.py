@@ -149,8 +149,8 @@ class AbiWordActivity(activity.Activity):
         
         #Add a advice button 
         advice_toolbar = ToolbarButton()
-        advice_toolbar.props.icon_name = 'document-print'
-        advice_toolbar.props.label = _('Print Content')
+        advice_toolbar.props.icon_name = 'advice'
+        advice_toolbar.props.label = _('Advice')
         advice_toolbar.connect('clicked', self._on_advice_button_clicked)
         toolbar_box.toolbar.insert(advice_toolbar, -1)
 
