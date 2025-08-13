@@ -142,6 +142,7 @@ class AbiWordActivity(activity.Activity):
 
         # Add chat button to toolbar
         chat_toolbar = ToolbarButton()
+        chat_toolbar.set_tooltip(_('Chat with Mary Tales'))
         chat_toolbar.props.icon_name = 'chat'
         chat_toolbar.props.label = _('Chat')
         chat_toolbar.connect('clicked', lambda w: self.chat_sidebar.toggle_visibility())
@@ -149,6 +150,7 @@ class AbiWordActivity(activity.Activity):
         
         #Add a advice button 
         advice_toolbar = ToolbarButton()
+        advice_toolbar.set_tooltip(_('Get advice from Mary Tales'))
         advice_toolbar.props.icon_name = 'advice'
         advice_toolbar.props.label = _('Advice')
         advice_toolbar.connect('clicked', self._on_advice_button_clicked)
