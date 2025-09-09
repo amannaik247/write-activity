@@ -5,14 +5,14 @@ from dotenv import load_dotenv
 # Load environment variables
 def load_api_key():
     load_dotenv()
-    return os.getenv("GROQ_API_KEY")
+    return os.getenv("SUGAR_AI_API_KEY")
 
 def load_story_prompt():
     prompt_path = os.path.join(os.path.dirname(__file__), "prompts", "story_qa_prompt.txt")
     with open(prompt_path, "r", encoding="utf-8") as f:
         return f.read()
 
-GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+SUGAR_AI_API_URL = "http://localhost:8000/chat/completions"
 story_prompt = load_story_prompt()
 
 def get_llm_response(messages, system_prompt=None):
@@ -24,17 +24,19 @@ def get_llm_response(messages, system_prompt=None):
         sys_prompt = system_prompt if system_prompt else story_prompt
         full_messages = [{"role": "system", "content": sys_prompt}] + messages
         headers = {
-            "Authorization": f"Bearer {api_key}",
+            "X-API-KEY": api_key,
             "Content-Type": "application/json"
         }
         payload = {
-            "model": "llama-3.3-70b-versatile",
             "messages": full_messages,
-            "temperature": 0.8,
-            "max_tokens": 1024,
-            "top_p": 0.9
+            "max_length": 512,
+            "truncation": False,
+            "repetition_penalty": 1.1,
+            "temperature": 0.7,
+            "top_p": 0.9,
+            "top_k": 40
         }
-        response = requests.post(GROQ_API_URL, headers=headers, json=payload, timeout=60)
+        response = requests.post(SUGAR_AI_API_URL, headers=headers, json=payload, timeout=60)
         response.raise_for_status()
         data = response.json()
         return data["choices"][0]["message"]["content"]

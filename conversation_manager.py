@@ -1,6 +1,6 @@
 import json
 import os
-from groq_api import get_llm_response
+from sugarai_api import get_llm_response
 
 # Extract story info from conversation using LLM analysis prompt
 def extract_story_info(messages):
